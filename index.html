@@ -1,150 +1,186 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0"
-    />
-    <meta
-      name="description"
-      content="AI.SW 부천연합해커톤 팀 프로젝트"
-    />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>진짜? 가짜? — 가짜뉴스·딥페이크 판별 게임</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
 
-    <title>우리 팀의 무해한 AI 프로젝트</title>
+<div class="app">
 
-    <link rel="stylesheet" href="styles.css" />
-    <script src="app.js" defer></script>
-  </head>
+  <!-- ===== 1. 시작 화면 ===== -->
+  <section id="screen-start" class="screen active">
+    <div class="card center">
+      <div class="logo">🕵️</div>
+      <h1>진짜? 가짜?</h1>
+      <p class="tagline">가짜뉴스 · 딥페이크 판별 훈련소</p>
 
-  <body>
-    <header class="hero">
-      <div class="container">
-        <p class="event-name">AI.SW 부천연합해커톤</p>
+      <p class="desc">
+        뉴스 기사와 사진·영상이 번갈아 나옵니다.<br />
+        <b>진짜인지 가짜인지</b> 골라보세요.<br />
+        맞히든 틀리든 <b>이유와 단서</b>를 알려줍니다.
+      </p>
 
-        <h1 id="project-title">우리 팀의 프로젝트</h1>
-
-        <p class="theme">
-          AI와 미래의 공존:
-          <strong>무한한 상상, 무해한 AI</strong>
-        </p>
-
-        <p id="project-summary" class="project-summary">
-          이 문장을 우리 팀의 프로젝트 소개로 변경해 주세요.
-        </p>
+      <div class="start-stats">
+        <div><span id="start-total">0</span><small>문제</small></div>
+        <div><span id="start-news">0</span><small>뉴스</small></div>
+        <div><span id="start-image">0</span><small>사진·영상</small></div>
       </div>
-    </header>
 
-    <main class="container">
-      <section class="project-info" aria-labelledby="project-info-title">
-        <h2 id="project-info-title">프로젝트 한눈에 보기</h2>
+      <button id="btn-start" class="btn btn-primary btn-lg">훈련 시작하기</button>
+      <button id="btn-skip-to-learn" class="btn btn-ghost">게임 없이 판별법만 보기</button>
+    </div>
+  </section>
 
-        <div class="card-grid">
-          <article class="info-card">
-            <span class="card-icon" aria-hidden="true">👤</span>
-            <h3>대상 사용자</h3>
-            <p id="target-user">
-              이 앱을 사용할 사람을 작성하세요.
-            </p>
-          </article>
+  <!-- ===== 2. 게임 화면 ===== -->
+  <section id="screen-game" class="screen">
 
-          <article class="info-card">
-            <span class="card-icon" aria-hidden="true">💡</span>
-            <h3>해결할 문제</h3>
-            <p id="problem">
-              사용자가 겪는 문제를 작성하세요.
-            </p>
-          </article>
+    <div class="topbar">
+      <div class="progress-wrap">
+        <div class="progress"><div id="progress-fill" class="progress-fill"></div></div>
+        <span id="progress-text" class="progress-text">1 / 18</span>
+      </div>
+      <div class="score-chip">⭐ <span id="score-text">0</span></div>
+    </div>
 
-          <article class="info-card">
-            <span class="card-icon" aria-hidden="true">🤖</span>
-            <h3>AI의 역할</h3>
-            <p id="ai-role">
-              AI 또는 AI적 요소가 어떤 도움을 주는지 작성하세요.
-            </p>
-          </article>
+    <div class="card">
+      <div id="q-type" class="badge">📰 뉴스 기사</div>
 
-          <article class="info-card">
-            <span class="card-icon" aria-hidden="true">🛡️</span>
-            <h3>무해한 설계</h3>
-            <p id="safety-design">
-              위험, 차별, 개인정보 문제를 어떻게 예방하는지 작성하세요.
-            </p>
-          </article>
+      <!-- 뉴스형 문제 -->
+      <div id="q-news" class="q-news">
+        <h2 id="news-title"></h2>
+        <p id="news-body"></p>
+        <div id="news-meta" class="news-meta"></div>
+      </div>
+
+      <!-- 사진/영상형 문제 -->
+      <div id="q-image" class="q-image hidden">
+        <div class="photo-frame">
+          <div id="photo-emoji" class="photo-emoji"></div>
+          <div id="photo-caption" class="photo-caption"></div>
         </div>
-      </section>
+        <div class="zoom-box">
+          <div class="zoom-title">🔍 확대해서 본 부분</div>
+          <ul id="photo-details"></ul>
+        </div>
+      </div>
 
-      <section class="demo-section" aria-labelledby="demo-title">
-        <div class="section-heading">
+      <div class="question-line">이건 <b>진짜</b>일까요, <b>가짜</b>일까요?</div>
+
+      <div id="answer-buttons" class="answer-buttons">
+        <button class="btn btn-real" data-answer="real">✅ 진짜다</button>
+        <button class="btn btn-fake" data-answer="fake">🚫 가짜다</button>
+      </div>
+
+      <!-- 정답 해설 -->
+      <div id="feedback" class="feedback hidden">
+        <div id="feedback-head" class="feedback-head"></div>
+        <p id="feedback-reason" class="feedback-reason"></p>
+
+        <div class="signal-block">
+          <div class="signal-title" id="signal-title">이 문제의 판별 단서</div>
+          <div id="signal-tags" class="signal-tags"></div>
+        </div>
+
+        <button id="btn-next" class="btn btn-primary btn-block">다음 문제 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 3. 결과 화면 ===== -->
+  <section id="screen-result" class="screen">
+    <div class="card center">
+      <div id="result-emoji" class="logo"></div>
+      <h1 id="result-grade"></h1>
+      <p class="tagline"><span id="result-score"></span>점 / 100점</p>
+
+      <div class="result-bars">
+        <div class="result-bar">
+          <div class="rb-label">📰 뉴스 기사 <span id="rb-news-num"></span></div>
+          <div class="progress"><div id="rb-news" class="progress-fill"></div></div>
+        </div>
+        <div class="result-bar">
+          <div class="rb-label">🖼️ 사진·영상 <span id="rb-image-num"></span></div>
+          <div class="progress"><div id="rb-image" class="progress-fill"></div></div>
+        </div>
+      </div>
+
+      <p id="result-comment" class="desc"></p>
+
+      <div id="wrong-box" class="wrong-box hidden">
+        <div class="wrong-title">😵 놓친 문제 다시보기</div>
+        <ul id="wrong-list"></ul>
+      </div>
+
+      <button id="btn-to-learn" class="btn btn-primary btn-lg">그래서, 어떻게 판별하나요? →</button>
+      <button id="btn-retry" class="btn btn-ghost">다시 도전하기</button>
+    </div>
+  </section>
+
+  <!-- ===== 4. 판별법 학습 화면 ===== -->
+  <section id="screen-learn" class="screen">
+
+    <div class="card">
+      <h1 class="learn-h1">🧭 판별법 가이드</h1>
+      <p class="desc left">
+        게임은 끝났지만 진짜는 지금부터입니다.<br />
+        아래는 <b>실제로 써먹는</b> 판별 체크리스트예요. 하나씩 눌러서 체크해보세요.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2 class="learn-h2">📰 가짜뉴스 체크리스트</h2>
+      <p class="learn-sub">기사를 볼 때 이 7가지 중 <b>2개 이상</b> 걸리면 의심하세요.</p>
+      <div id="check-news" class="checklist"></div>
+    </div>
+
+    <div class="card">
+      <h2 class="learn-h2">🖼️ 딥페이크 체크리스트</h2>
+      <p class="learn-sub">사진·영상은 <b>얼굴이 아니라 얼굴 주변</b>을 보세요. AI는 가장자리에서 실수합니다.</p>
+      <div id="check-image" class="checklist"></div>
+    </div>
+
+    <div class="card">
+      <h2 class="learn-h2">⚡ 실전 3단계 — S.C.S</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
           <div>
-            <p class="section-label">MVP DEMO</p>
-            <h2 id="demo-title">핵심 기능 시연 영역</h2>
-          </div>
-
-          <span id="app-status" class="status-badge">
-            시작 준비
-          </span>
-        </div>
-
-        <div class="demo-panel">
-          <p>
-            아래 버튼은 실행 환경을 확인하기 위한 예시입니다.
-            프로젝트를 시작하면 이 영역을 팀의 핵심 기능으로
-            교체하세요.
-          </p>
-
-          <div class="action-area">
-            <button id="start-button" type="button">
-              실행 확인
-            </button>
-
-            <button
-              id="reset-button"
-              class="secondary-button"
-              type="button"
-            >
-              초기화
-            </button>
-          </div>
-
-          <div
-            id="result"
-            class="result-box"
-            role="status"
-            aria-live="polite"
-          >
-            버튼을 누르면 결과가 이곳에 표시됩니다.
+            <b>Stop — 멈춰라</b>
+            <p>화가 나거나 놀랐다면 그게 신호입니다. 가짜뉴스는 <b>감정을 노리고</b> 만들어집니다. 공유 버튼에서 손을 떼세요.</p>
           </div>
         </div>
-      </section>
-
-      <section class="principles" aria-labelledby="principles-title">
-        <h2 id="principles-title">우리 팀의 AI 공존 원칙</h2>
-
-        <ul>
-          <li>
-            AI의 결과를 정답으로 강요하지 않고 사용자가 최종적으로
-            선택할 수 있게 합니다.
-          </li>
-          <li>
-            이름, 연락처, 비밀번호 등 개인정보를 수집하지 않습니다.
-          </li>
-          <li>
-            사람을 차별하거나 상처 주는 결과가 나오지 않도록
-            테스트합니다.
-          </li>
-          <li>
-            AI 또는 규칙 기반 판단의 한계를 사용자에게 알려 줍니다.
-          </li>
-        </ul>
-      </section>
-    </main>
-
-    <footer>
-      <div class="container footer-content">
-        <p>AI.SW 부천연합해커톤</p>
-        <p>무한한 상상 · 무해한 AI</p>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div>
+            <b>Check — 출처를 찾아라</b>
+            <p>기사 제목의 <b>핵심 단어만</b> 검색해보세요. 진짜 사건이면 다른 언론사도 반드시 씁니다. 한 곳에만 있으면 가짜일 확률이 큽니다.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div>
+            <b>Share — 확인된 것만 공유</b>
+            <p>확실하지 않으면 공유하지 않는 것도 실력입니다. 가짜뉴스는 <b>믿는 사람</b>이 아니라 <b>퍼뜨리는 사람</b> 때문에 퍼집니다.</p>
+          </div>
+        </div>
       </div>
-    </footer>
-  </body>
+    </div>
+
+    <div class="card center">
+      <div class="score-summary">
+        내 점수는 <b><span id="learn-score">0</span>점</b>이었어요.<br />
+        체크리스트 <b><span id="check-count">0</span>개</b>를 확인했습니다.
+      </div>
+      <button id="btn-restart" class="btn btn-primary btn-lg">다시 훈련하기 🔄</button>
+    </div>
+
+  </section>
+
+</div>
+
+<script src="script.js"></script>
+</body>
 </html>
